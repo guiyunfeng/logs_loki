@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import {
-  RefreshCw, BarChart3, LayoutDashboard, LineChart, Settings, Bell,
+  RefreshCw, BarChart3, LayoutDashboard, LineChart, Settings, Bell, Search,
   ArrowLeft, ExternalLink, MessageSquare, Phone, AlertTriangle,
   Zap, Info, CheckCircle, Clock, Server, XCircle, Copy, Check,
   Wifi, WifiOff,
@@ -15,6 +15,7 @@ import { MetricsCards } from './MetricsCards';
 import { ServiceAnalysisPanel } from './ServiceAnalysisPanel';
 import { ResponseTimePanel } from './ResponseTimePanel';
 import { LogDetailModal } from './LogDetailModal';
+import { LogQLExplorer } from './LogQLExplorer';
 import {
   generateErrorTypeData,
   generateTopNErrors,
@@ -292,7 +293,7 @@ function lokiToResponseTimeData(_logs: LokiLog[]) {
   });
 }
 
-type TabId = 'dashboard' | 'analysis' | 'alerts' | 'grafana';
+type TabId = 'dashboard' | 'analysis' | 'alerts' | 'logql' | 'grafana';
 
 /* ═══════════════════════════════════════════════════════════════
    Grafana Alert Rule 配置预览数据
@@ -548,6 +549,7 @@ export function SystemPage() {
     { id: 'dashboard', label: '概览仪表板', icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: 'analysis', label: '多维度分析', icon: <LineChart className="w-4 h-4" /> },
     { id: 'alerts', label: '告警规则 & 通知', icon: <Bell className="w-4 h-4" /> },
+    { id: 'logql', label: 'LogQL 查询', icon: <Search className="w-4 h-4" /> },
     { id: 'grafana', label: 'Grafana 配置', icon: <Settings className="w-4 h-4" /> },
   ];
 
@@ -792,6 +794,11 @@ export function SystemPage() {
             {/* 当前活跃告警预览 */}
             <AlertsPanel alerts={alerts} />
           </>
+        )}
+
+        {/* ═════════ Tab: LogQL 查询 ═════════ */}
+        {activeTab === 'logql' && (
+          <LogQLExplorer />
         )}
 
         {/* ═════════ Tab: Grafana 配置 ═════════ */}

@@ -34,7 +34,7 @@ export class RealLokiDataService {
             const [timestamp, message] = value;
             logs.push({
               id: `${labels.job || 'unknown'}-${index}-${timestamp}`,
-              timestamp: new Date(parseInt(timestamp) / 1000000).toISOString(),
+              timestamp: new Date(Number.parseInt(timestamp) / 1000000).toISOString(),
               level: labels.level || 'INFO',
               message: message,
               service: labels.job || labels.service || 'unknown',
@@ -66,7 +66,7 @@ export class RealLokiDataService {
         end
       );
 
-      const logs = [];
+      const logs: string[] = [];
       if (response.data?.result?.length > 0) {
         response.data.result.forEach((stream: any) => {
           stream.values?.forEach((value: [string, string]) => {
@@ -96,8 +96,8 @@ export class RealLokiDataService {
         const parsed = JSON.parse(log);
         const value = parsed[field] || 'unknown';
         result[value] = (result[value] || 0) + 1;
-      } catch (e) {
-        // 忽略无法解析的日志
+      } catch {
+        // 非 JSON 格式日志，跳过分组
       }
     });
     return result;
@@ -113,8 +113,8 @@ export class RealLokiDataService {
         const parsed = JSON.parse(log);
         const message = parsed.message || 'unknown';
         errorCounts[message] = (errorCounts[message] || 0) + 1;
-      } catch (e) {
-        // 忽略无法解析的日志
+      } catch {
+        // 非 JSON 格式日志，跳过统计
       }
     });
 

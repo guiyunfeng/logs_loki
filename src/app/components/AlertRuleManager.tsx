@@ -13,8 +13,8 @@ export interface AlertRule {
 }
 
 interface AlertRuleManagerProps {
-  rules: AlertRule[];
-  onRulesChange: (rules: AlertRule[]) => void;
+  readonly rules: AlertRule[];
+  readonly onRulesChange: (rules: AlertRule[]) => void;
 }
 
 const emptyRule: Omit<AlertRule, 'id'> = {
@@ -111,14 +111,14 @@ export function AlertRuleManager({ rules, onRulesChange }: AlertRuleManagerProps
           type="number"
           placeholder="阈值"
           value={formData.threshold || ''}
-          onChange={(e) => setFormData({ ...formData, threshold: parseFloat(e.target.value) || 0 })}
+          onChange={(e) => setFormData({ ...formData, threshold: Number.parseFloat(e.target.value) || 0 })}
           className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <input
           type="number"
           placeholder="持续时间(分钟)"
           value={formData.duration || ''}
-          onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 0 })}
+          onChange={(e) => setFormData({ ...formData, duration: Number.parseInt(e.target.value) || 0 })}
           className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <textarea

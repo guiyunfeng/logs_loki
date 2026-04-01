@@ -279,7 +279,7 @@
         <div class="eyebrow">流程说明页</div>
         <h1>日志平台流程说明</h1>
         <p class="subtitle">
-          本说明页重点描述日志从采集、存储、查询、转换到三个主面板展示的完整链路，以及日常排查时每个页面承担的职责。
+          本说明页已按当前版本重整：重点描述 error.log 单源采集、前端自动分级（CRITICAL/HIGH/MEDIUM/LOW）、紧凑双卡布局与告警建议逻辑，确保文档与页面实现一致。
         </p>
 
         <div class="quick-links">
@@ -289,11 +289,11 @@
           </div>
           <div class="quick-link">
             <strong>日志统计分析</strong>
-            <span>看趋势、分布、Top N 错误以及多维筛选结果。</span>
+            <span>看自动分级趋势、双分布紧凑卡、Top N 错误与筛选结果。</span>
           </div>
           <div class="quick-link">
             <strong>Grafana 面板</strong>
-            <span>看实时监控、告警列表、日志流和服务聚合视图。</span>
+            <span>看实时监控、告警列表、日志流、服务聚合，以及内置 LogQL 查询。</span>
           </div>
         </div>
       </section>
@@ -310,7 +310,7 @@
             <ol class="step-list">
               <li>高级分析：先看风险范围和受影响服务。</li>
               <li>日志统计分析：再看错误趋势、Top N 和筛选结果。</li>
-              <li>Grafana 面板：最后看实时告警和日志流是否仍在持续。</li>
+              <li>Grafana 面板：最后看实时告警、日志流，以及用 LogQL 做精准查询。</li>
             </ol>
           </div>
           <div class="card">
@@ -318,6 +318,7 @@
             <ol class="step-list">
               <li>页面加载时根据默认时间窗口发起 Loki 查询。</li>
               <li>切换时间范围后重新计算开始时间和结束时间。</li>
+              <li>短窗口使用分钟区间（如 30m），避免 Loki 小数小时语法错误。</li>
               <li>前端按当前窗口重新聚合趋势、Top N 和服务维度数据。</li>
             </ol>
           </div>
@@ -335,34 +336,36 @@
       <section class="section">
         <h2>1. 数据从哪来</h2>
         <p class="muted">
-          当前代码中的数据主链路是“业务错误日志 → Promtail 标签化 → Loki 存储 → 前端 LogQL 查询 → 本地转换聚合 → 各分析面板展示”。
+          当前代码中的数据主链路是“业务 error.log → Promtail 标签化 → Loki 存储 → 前端 LogQL 查询 → 本地自动分级与聚合 → 各分析面板展示”。
         </p>
 
         <div class="mermaid">
 flowchart TD
-    A[业务服务输出 error.log] --> B[Promtail 采集与打标签]
-    B --> C[Loki 存储日志流]
-    C --> D[前端发起 LogQL 查询]
-    D --> E[前端标准化转换]
-    E --> F1[高级分析页]
-    E --> F2[日志统计分析页]
-    E --> F3[Grafana 面板页]
-    F1 --> G[服务健康 根因 异常 预测]
-    F2 --> H[趋势 分布 TopN 筛选]
-    F3 --> I[仪表盘 告警 日志流]
-    I --> J[告警分级与通知展示]
-    C -. 查询失败或无数据 .-> K[Mock 数据降级]
-    K -. 保持页面可用 .-> F1
-    K -. 保持页面可用 .-> F2
-    K -. 保持页面可用 .-> F3
+  A[业务服务输出 error.log] --> B[Promtail 采集与打标签]
+  B --> C[Loki 存储日志流]
+  C --> D[前端发起 LogQL 查询]
+  D --> E[前端标准化转换]
+  E --> X[自动分级引擎]
+  X --> Y1[关键词命中 => CRITICAL]
+  X --> Y2[按频次 => HIGH MEDIUM LOW]
+  Y1 --> F1[高级分析页]
+  Y2 --> F1
+  Y1 --> F2[日志统计分析页]
+  Y2 --> F2
+  E --> F3[Grafana 面板页]
+  F2 --> H[等级趋势 双分布 TopN 筛选]
+  C -. 查询失败或无数据 .-> K[Mock 数据降级]
+  K -. 保持页面可用 .-> F1
+  K -. 保持页面可用 .-> F2
+  K -. 保持页面可用 .-> F3
         </div>
 
         <div class="grid grid-2">
           <div class="card">
             <h3>采集与存储</h3>
             <ol class="step-list">
-              <li>业务服务持续产出错误日志文件。</li>
-              <li>Promtail 负责采集日志，并补充 job、level、project、app、error_type、filename 等标签。</li>
+              <li>业务服务持续产出 error.log（当前源日志只有 error 级别）。</li>
+              <li>Promtail 负责采集日志，并补充 job、project、app、filename 等标签。</li>
               <li>Loki 负责保存日志流，并支持按时间范围与标签进行检索。</li>
             </ol>
           </div>
@@ -372,7 +375,7 @@ flowchart TD
               <li>前端通过 LogQL 查询指定时间范围内的日志流。</li>
               <li>把纳秒时间戳转为可读时间，并尝试解析 JSON 日志正文。</li>
               <li>若 project/app 缺失，则从 filename 中补全归属信息。</li>
-              <li>把 level 统一成大写，保证筛选和聚合逻辑一致。</li>
+              <li>执行自动分级：命中致命关键词标 CRITICAL，否则按频次划分 HIGH/MEDIUM/LOW。</li>
             </ol>
           </div>
         </div>
@@ -403,14 +406,14 @@ flowchart TD
             <tr>
               <td>日志统计分析</td>
               <td>快速定位问题</td>
-              <td>趋势图、级别分布、项目服务拆分、Top N、筛选器</td>
-              <td>哪里报错最多？哪个项目和服务最值得优先排查？</td>
+              <td>自动分级趋势、紧凑双分布卡、项目服务拆分、Top N、筛选器</td>
+              <td>当前主导风险等级是什么？哪个项目和服务最值得优先排查？</td>
             </tr>
             <tr>
               <td>Grafana 面板</td>
               <td>实时监控与告警展示</td>
-              <td>指标卡、错误类型、趋势、告警列表、实时日志流、服务维度</td>
-              <td>错误是否还在持续？是否已经达到高等级告警？</td>
+              <td>指标卡、错误类型、趋势、告警列表、实时日志流、服务维度、LogQL 查询器</td>
+              <td>错误是否还在持续？是否达到高等级告警？某条日志能否用 LogQL 精准复现？</td>
             </tr>
           </tbody>
         </table>
@@ -427,7 +430,7 @@ flowchart LR
     A[进入首页] --> B[高级分析]
     B --> C[确认错误率与受影响服务]
     C --> D[日志统计分析]
-    D --> E[查看趋势 分布 TopN]
+    D --> E[查看自动分级趋势 双分布 TopN]
     E --> F[Grafana 面板]
     F --> G[确认实时告警与日志流]
     G --> H[返回业务系统修复]
@@ -485,14 +488,14 @@ flowchart LR
               <span class="tag tag-green">快速定位</span>
             </div>
             <ul class="plain-list">
-              <li>支持按时间范围、级别、服务器、项目、服务和关键字过滤。</li>
-              <li>展示错误时间趋势，识别异常峰值与高发时段。</li>
-              <li>展示严重级别分布与项目服务拆分。</li>
+              <li>支持按时间范围、自动等级、服务器、项目、服务和关键字过滤。</li>
+              <li>展示自动分级趋势，识别异常峰值与高发时段。</li>
+              <li>右侧为“等级分布 + 服务器分布”紧凑双卡。</li>
               <li>展示 Top N 错误，帮助确定优先治理项。</li>
             </ul>
             <div class="badge-row">
               <span class="badge">趋势图</span>
-              <span class="badge">分布图</span>
+              <span class="badge">紧凑双卡</span>
               <span class="badge">Top N</span>
               <span class="badge">多维筛选</span>
             </div>
@@ -508,13 +511,43 @@ flowchart LR
               <li>把日志按项目和应用聚合成告警列表。</li>
               <li>展示最近日志流，用于判断异常是否仍在持续。</li>
               <li>展示服务或服务器维度的受影响情况。</li>
+              <li>内置 LogQL 查询器，支持快速试验 query、限定时间窗并验证过滤效果。</li>
             </ul>
             <div class="badge-row">
               <span class="badge">指标卡</span>
               <span class="badge">告警列表</span>
               <span class="badge">实时日志流</span>
               <span class="badge">服务聚合</span>
+              <span class="badge">LogQL 查询</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>7. Grafana 面板中的 LogQL 查询功能</h2>
+        <p class="muted">
+          当前系统在 Grafana 面板页内集成了 LogQL 查询模块，可用于补充可视化卡片之外的精确检索与验证。
+        </p>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>适用场景</h3>
+            <ul class="plain-list">
+              <li>想验证某个项目/服务是否在特定时间窗内持续报错。</li>
+              <li>想用标签组合（如 job、project、app）快速缩小范围。</li>
+              <li>想对 Top 错误中的关键字做二次确认，判断是否仍在发生。</li>
+              <li>想在告警前先手工验证 query 的命中准确性。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>建议使用步骤</h3>
+            <ol class="step-list">
+              <li>先在日志统计分析页锁定目标项目/服务与时间段。</li>
+              <li>进入 Grafana 面板的 LogQL 查询区，拼装基础查询。</li>
+              <li>逐步追加过滤条件（标签或关键字段）并缩小时间窗。</li>
+              <li>确认命中结果后再回到告警与处置流程执行升级动作。</li>
+            </ol>
           </div>
         </div>
       </section>
@@ -522,29 +555,31 @@ flowchart LR
       <section class="section">
         <h2>5. 告警与处置闭环</h2>
         <p class="muted">
-          当前代码中的告警更偏“前端可视化判断”，核心是按项目、应用或服务聚合错误，再映射为不同严重等级，辅助值班和处置。
+          当前告警判断基于“自动分级 + 频次阈值 + 影响面”，并在页面中给出 P1/P2/观察建议，用于值班决策与处置升级。
         </p>
 
         <div class="mermaid">
 flowchart LR
-    A[错误日志持续出现] --> B[前端聚合统计]
-    B --> C[判断频次与影响范围]
-    C --> D[映射为 warning error critical]
-    D --> E[告警列表展示]
-    E --> F[研发或运维介入处理]
-    F --> G[返回页面继续观察]
-    G --> H{趋势是否回落}
-    H -- 是 --> I[恢复日常监控]
-    H -- 否 --> J[继续升级排查]
+  A[错误日志持续出现] --> B[前端聚合统计]
+  B --> C[关键词判定 CRITICAL]
+  B --> D[同类错误频次分级]
+  C --> E[生成 CRITICAL HIGH MEDIUM LOW]
+  D --> E
+  E --> F[页面给出 P1 P2 观察建议]
+  F --> G[研发或运维介入处理]
+  G --> H[返回页面继续观察]
+  H --> I{趋势是否回落}
+  I -- 是 --> J[恢复日常监控]
+  I -- 否 --> K[继续升级排查]
         </div>
 
         <div class="grid grid-3">
           <div class="card">
             <h3>告警判断</h3>
             <ul class="plain-list">
-              <li><span class="warn">warning</span>：错误出现但影响范围有限。</li>
-              <li><span class="danger">error</span>：错误频次上升，需要尽快介入。</li>
-              <li><span class="danger">critical</span>：错误数量或影响面明显扩大，需要升级处理。</li>
+              <li><span class="danger">CRITICAL</span>：命中致命关键词（如 OOM、磁盘满、连接池耗尽）。</li>
+              <li><span class="warn">HIGH / MEDIUM / LOW</span>：按同类错误在窗口内出现次数自动分级。</li>
+              <li><span class="ok">建议</span>：CRITICAL 存在则优先 P1，HIGH 累积过高则 P2，否则观察。</li>
             </ul>
           </div>
           <div class="card">
@@ -587,8 +622,8 @@ flowchart LR
             <tr>
               <td>level</td>
               <td>Promtail 标签</td>
-              <td>识别日志级别</td>
-              <td>统一转成大写后参与筛选</td>
+              <td>原始日志级别</td>
+              <td>当前源日志仅 error，不作为最终等级依据</td>
             </tr>
             <tr>
               <td>project / app</td>
@@ -607,6 +642,12 @@ flowchart LR
               <td>日志正文 JSON</td>
               <td>展示错误信息</td>
               <td>按优先级解析，解析失败回退原文</td>
+            </tr>
+            <tr>
+              <td>severity(自动)</td>
+              <td>前端推断字段</td>
+              <td>告警判断与趋势分线</td>
+              <td>关键词优先 CRITICAL，其余按频次归为 HIGH/MEDIUM/LOW</td>
             </tr>
           </tbody>
         </table>

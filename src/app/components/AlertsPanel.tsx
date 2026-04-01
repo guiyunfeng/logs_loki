@@ -11,7 +11,7 @@ interface Alert {
 }
 
 interface AlertsPanelProps {
-  alerts: Alert[];
+  readonly alerts: Alert[];
 }
 
 export function AlertsPanel({ alerts }: AlertsPanelProps) {

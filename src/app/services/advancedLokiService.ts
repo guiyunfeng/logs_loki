@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import { LokiService, LokiQueryResult, LokiStreamResult } from './lokiService';
+import { LokiService, LokiQueryResult } from './lokiService';
 
 export interface QueryMetrics {
   totalQueries: number;
@@ -45,19 +45,19 @@ export interface LogStatistics {
  * - 提供高级聚合功能
  */
 export class AdvancedLokiService {
-  private lokiService: LokiService;
-  private queryCache: Map<string, { result: any; timestamp: number }> = new Map();
-  private cacheExpirationMs: number = 300000; // 5分钟缓存
-  private metrics: QueryMetrics = {
+  private readonly lokiService: LokiService;
+  private readonly queryCache: Map<string, { result: any; timestamp: number }> = new Map();
+  private readonly cacheExpirationMs: number;
+  private readonly metrics: QueryMetrics = {
     totalQueries: 0,
     cacheHits: 0,
     cacheMisses: 0,
     avgResponseTime: 0,
   };
 
-  constructor(lokiService: LokiService, cacheExpirationMs?: number) {
+  constructor(lokiService: LokiService, cacheExpirationMs: number = 300000) {
     this.lokiService = lokiService;
-    if (cacheExpirationMs) this.cacheExpirationMs = cacheExpirationMs;
+    this.cacheExpirationMs = cacheExpirationMs;
   }
 
   /**
@@ -167,7 +167,7 @@ export class AdvancedLokiService {
 
     let total = 0;
     const buckets = result.data.result.map((item) => {
-      const count = parseInt(item.value?.[1] || '0');
+      const count = Number.parseInt(item.value?.[1] || '0');
       total += count;
       return { key: item.metric[labelName] || 'unknown', count, percentage: 0 };
     });
@@ -178,7 +178,7 @@ export class AdvancedLokiService {
     });
 
     return {
-      buckets: buckets.sort((a, b) => b.count - a.count),
+      buckets: buckets.toSorted((a, b) => b.count - a.count),
       total,
     };
   }
@@ -216,8 +216,8 @@ export class AdvancedLokiService {
       this.cachedQuery(`sum(count_over_time(${denominatorSelector} [${hours}h]))`),
     ]);
 
-    const numerator = parseInt(numeratorResult.data.result?.[0]?.value?.[1] || '0');
-    const denominator = parseInt(denominatorResult.data.result?.[0]?.value?.[1] || '1');
+    const numerator = Number.parseInt(numeratorResult.data.result?.[0]?.value?.[1] || '0');
+    const denominator = Number.parseInt(denominatorResult.data.result?.[0]?.value?.[1] || '1');
 
     return denominator > 0 ? numerator / denominator : 0;
   }
@@ -235,7 +235,7 @@ export class AdvancedLokiService {
     const queryPromises = percentiles.map((p) => {
       const pQuery = `histogram_quantile(0.${p}, sum(rate(${query}[${hours}h])))`;
       return this.cachedQuery(pQuery).then((res) => {
-        const value = parseFloat(res.data.result?.[0]?.value?.[1] || '0');
+        const value = Number.parseFloat(res.data.result?.[0]?.value?.[1] || '0');
         result[`p${p}`] = value;
       });
     });
@@ -279,7 +279,7 @@ export class AdvancedLokiService {
       projectMap[b.key] = b.count;
     });
 
-    const avgTimeValue = parseFloat(avgTime.data.result?.[0]?.value?.[1] || '0');
+    const avgTimeValue = Number.parseFloat(avgTime.data.result?.[0]?.value?.[1] || '0');
 
     return {
       totalLogs: severity.total,
@@ -310,8 +310,8 @@ export class AdvancedLokiService {
     const timeSeries: TimeSeriesAggregation[] = [];
     result.data.result[0].values?.forEach(([timestamp, value]) => {
       timeSeries.push({
-        timestamp: parseInt(timestamp.toString()) / 1000000, // 纳秒转毫秒
-        value: parseFloat(value),
+        timestamp: Number.parseInt(timestamp.toString()) / 1000000, // 纳秒转毫秒
+        value: Number.parseFloat(value),
         aggregationType,
       });
     });

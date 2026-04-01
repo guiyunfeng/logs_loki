@@ -6,10 +6,11 @@ const lokiService = axios.create(lokiConfig);
 /**
  * 查询 Loki 日志
  * @param query 查询表达式
- * @param start 开始时间（时间戳，毫秒）
- * @param end 结束时间（时间戳，毫秒）
+ * @param start 开始时间（Unix 秒）
+ * @param end 结束时间（Unix 秒）
+ * @param limit 最大返回条数（默认 2000）
  */
-export const queryLoki = async (query: string, start: number, end: number) => {
+export const queryLoki = async (query: string, start: number, end: number, limit: number = 2000) => {
   try {
     const response = await lokiService.get('/loki/api/v1/query_range', {
       params: {
@@ -17,7 +18,7 @@ export const queryLoki = async (query: string, start: number, end: number) => {
         start,
         end,
         direction: 'BACKWARD',
-        limit: 1000,
+        limit,
       },
     });
     return response.data;

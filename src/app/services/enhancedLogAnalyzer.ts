@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import { AdvancedLokiService, AggregationResult, LogStatistics } from './advancedLokiService';
+import { AdvancedLokiService, LogStatistics } from './advancedLokiService';
 
 export interface ErrorAnalysis {
   topErrors: Array<{
@@ -65,7 +65,7 @@ export interface LogPattern {
  * 增强版日志分析器
  */
 export class EnhancedLogAnalyzer {
-  private lokiService: AdvancedLokiService;
+  private readonly lokiService: AdvancedLokiService;
 
   constructor(lokiService: AdvancedLokiService) {
     this.lokiService = lokiService;
@@ -75,7 +75,7 @@ export class EnhancedLogAnalyzer {
    * 生成完整错误分析报告
    */
   async generateErrorAnalysis(hours: number = 24): Promise<ErrorAnalysis> {
-    const [errorDimensions, errorTrendRaw] = await Promise.all([
+    const [errorDimensions] = await Promise.all([
       this.lokiService.getMultiDimensionStats(
         '{level=~"error|critical"}',
         ['message', 'service'],
@@ -148,19 +148,23 @@ export class EnhancedLogAnalyzer {
       ),
     ]);
 
-    const serviceErrors = stats.byService[service] || 0;
+    const _serviceErrors = stats.byService[service] || 0;
     let status: 'healthy' | 'degraded' | 'critical' = 'healthy';
     const recommendations: string[] = [];
 
     if (errorRate > 0.1) {
       status = 'critical';
-      recommendations.push(`错误率达到 ${(errorRate * 100).toFixed(2)}%，需要立即处理`);
-      recommendations.push('检查最近的代码部署');
-      recommendations.push('查看实时日志排查问题根因');
+      recommendations.push(
+        `错误率达到 ${(errorRate * 100).toFixed(2)}%，需要立即处理`,
+        '检查最近的代码部署',
+        '查看实时日志排查问题根因'
+      );
     } else if (errorRate > 0.05) {
       status = 'degraded';
-      recommendations.push(`错误率达到 ${(errorRate * 100).toFixed(2)}%，建议关注`);
-      recommendations.push('分析错误类型分布');
+      recommendations.push(
+        `错误率达到 ${(errorRate * 100).toFixed(2)}%，建议关注`,
+        '分析错误类型分布'
+      );
     } else {
       recommendations.push('服务状态良好，继续监控');
     }
@@ -254,7 +258,7 @@ export class EnhancedLogAnalyzer {
 
     if (result.data.result) {
       result.data.result.forEach((item) => {
-        const count = parseInt(item.value?.[1] || '0');
+        const count = Number.parseInt(item.value?.[1] || '0');
         if (count >= minOccurrences) {
           patterns.push({
             pattern: item.metric.message || 'unknown',
@@ -300,13 +304,13 @@ export class EnhancedLogAnalyzer {
             relatedErrors.push({
               message: parsed.message || 'unknown',
               count: 1,
-              timestamp: new Date(parseInt(timestamp) / 1000000).toISOString(),
+              timestamp: new Date(Number.parseInt(timestamp) / 1000000).toISOString(),
             });
             if (parsed.service) {
               affectedServices.add(parsed.service);
             }
-          } catch (e) {
-            // 忽略解析失败
+          } catch {
+            // 非 JSON 格式日志，跳过解析
           }
         });
       });
@@ -314,7 +318,7 @@ export class EnhancedLogAnalyzer {
 
     // 构建时间线
     const timeline = relatedErrors
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+      .toSorted((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
       .slice(0, 20)
       .map((err, index) => ({
         timestamp: err.timestamp,
@@ -364,7 +368,14 @@ export class EnhancedLogAnalyzer {
       ? ((currentValue - previousValue) / previousValue) * 100
       : 0;
 
-    const trend = changePercentage > 0 ? '上升' : changePercentage < 0 ? '下降' : '持平';
+    let trend: string;
+    if (changePercentage > 0) {
+      trend = '上升';
+    } else if (changePercentage < 0) {
+      trend = '下降';
+    } else {
+      trend = '持平';
+    }
 
     return {
       current: {
@@ -412,10 +423,10 @@ export class EnhancedLogAnalyzer {
   }
 
   private escapeRegex(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return str.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
   }
 
   private escapeCSV(str: string): string {
-    return str.replace(/"/g, '""');
+    return str.replaceAll('"', '""');
   }
 }

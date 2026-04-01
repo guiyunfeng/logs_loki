@@ -69,7 +69,7 @@ const ERROR_COLORS = [
 ];
 
 export class LogAnalyzer {
-  private lokiService: LokiService;
+  private readonly lokiService: LokiService;
 
   constructor(lokiService: LokiService) {
     this.lokiService = lokiService;
@@ -86,7 +86,7 @@ export class LogAnalyzer {
 
       return result.data.result.map((item, index) => ({
         name: item.metric.error_type || 'Unknown',
-        value: parseInt(item.value?.[1] || '0'),
+        value: Number.parseInt(item.value?.[1] || '0'),
         color: ERROR_COLORS[index % ERROR_COLORS.length],
       })).sort((a, b) => b.value - a.value);
     } catch (error) {
@@ -106,7 +106,7 @@ export class LogAnalyzer {
 
       return result.data.result.map(item => ({
         name: this.truncateMessage(item.metric.message || 'Unknown error'),
-        count: parseInt(item.value?.[1] || '0'),
+        count: Number.parseInt(item.value?.[1] || '0'),
         severity: this.mapLevelToSeverity(item.metric.level || 'error'),
       }));
     } catch (error) {
@@ -156,8 +156,8 @@ export class LogAnalyzer {
               });
             }
             
-            const trend = trendMap.get(timeKey)!;
-            trend[level as keyof Omit<TrendData, 'time'>] += parseInt(value);
+            const trend = trendMap.get(timeKey);
+            if (trend) trend[level as keyof Omit<TrendData, 'time'>] += Number.parseInt(value);
           });
         }
       });
@@ -186,7 +186,7 @@ export class LogAnalyzer {
           try {
             // 尝试解析 JSON 日志
             const parsed = this.parseLogLine(line);
-            const date = new Date(parseInt(timestamp) / 1000000); // 纳秒转毫秒
+            const date = new Date(Number.parseInt(timestamp) / 1000000); // 纳秒转毫秒
 
             logs.push({
               timestamp: date.toLocaleTimeString('zh-CN', { hour12: false }),
@@ -195,9 +195,9 @@ export class LogAnalyzer {
               source: parsed.source || stream.stream.job || 'unknown',
               metadata: parsed,
             });
-          } catch (e) {
-            // 如果解析失败，使用原始日志行
-            const date = new Date(parseInt(timestamp) / 1000000);
+          } catch {
+            // 解析失败，使用原始日志行作为回退
+            const date = new Date(Number.parseInt(timestamp) / 1000000);
             logs.push({
               timestamp: date.toLocaleTimeString('zh-CN', { hour12: false }),
               level: 'info',
@@ -226,7 +226,7 @@ export class LogAnalyzer {
       // 规则1: Critical 错误率检查
       const criticalQuery = `sum(rate({level="critical"} [5m]))`;
       const criticalResult = await this.lokiService.query(criticalQuery);
-      const criticalRate = parseFloat(criticalResult.data.result[0]?.value?.[1] || '0');
+      const criticalRate = Number.parseFloat(criticalResult.data.result[0]?.value?.[1] || '0');
 
       if (criticalRate > 0.05) { // 超过 5%
         alerts.push({
@@ -242,7 +242,7 @@ export class LogAnalyzer {
       // 规则2: 错误数量检查
       const errorCountQuery = `sum(count_over_time({level=~"error|critical"} [10m]))`;
       const errorResult = await this.lokiService.query(errorCountQuery);
-      const errorCount = parseInt(errorResult.data.result[0]?.value?.[1] || '0');
+      const errorCount = Number.parseInt(errorResult.data.result[0]?.value?.[1] || '0');
 
       if (errorCount > 50) {
         alerts.push({
@@ -258,7 +258,7 @@ export class LogAnalyzer {
       // 规则3: 警告级别检查
       const warningQuery = `sum(count_over_time({level="warning"} [15m]))`;
       const warningResult = await this.lokiService.query(warningQuery);
-      const warningCount = parseInt(warningResult.data.result[0]?.value?.[1] || '0');
+      const warningCount = Number.parseInt(warningResult.data.result[0]?.value?.[1] || '0');
 
       if (warningCount > 100) {
         alerts.push({
@@ -285,24 +285,22 @@ export class LogAnalyzer {
     try {
       const now = Math.floor(Date.now() / 1000);
       const hour1 = now - 3600;
-      const hour2 = hour1 - 3600;
-
       // 当前小时的错误总数
       const currentErrorsQuery = `sum(count_over_time({level=~"error|critical"} [1h]))`;
       const currentErrors = await this.lokiService.query(currentErrorsQuery);
-      const totalErrors = parseInt(currentErrors.data.result[0]?.value?.[1] || '0');
+      const totalErrors = Number.parseInt(currentErrors.data.result[0]?.value?.[1] || '0');
 
       // 上一小时的错误总数
       const previousErrorsQuery = `sum(count_over_time({level=~"error|critical"} [1h]))`;
       const previousErrors = await this.lokiService.query(previousErrorsQuery, hour1);
-      const previousTotal = parseInt(previousErrors.data.result[0]?.value?.[1] || '1');
+      const previousTotal = Number.parseInt(previousErrors.data.result[0]?.value?.[1] || '1');
 
       const errorChange = ((totalErrors - previousTotal) / previousTotal) * 100;
 
       // 错误率（假设总请求数可以从日志中获取）
       const totalRequestsQuery = `sum(count_over_time({job=~".+"} [1h]))`;
       const totalRequests = await this.lokiService.query(totalRequestsQuery);
-      const requestCount = parseInt(totalRequests.data.result[0]?.value?.[1] || '1');
+      const requestCount = Number.parseInt(totalRequests.data.result[0]?.value?.[1] || '1');
       const errorRate = (totalErrors / requestCount) * 100;
 
       // 活跃告警数（通过告警规则计算）
@@ -310,10 +308,10 @@ export class LogAnalyzer {
 
       return {
         totalErrors,
-        errorRate: parseFloat(errorRate.toFixed(2)),
+        errorRate: Number.parseFloat(errorRate.toFixed(2)),
         activeAlerts: alerts.length,
         avgResponseTime: 245, // 需要从日志中的响应时间字段计算
-        errorChange: parseFloat(errorChange.toFixed(1)),
+        errorChange: Number.parseFloat(errorChange.toFixed(1)),
         rateChange: -8.3, // 需要对比计算
         alertChange: 15.2, // 需要对比计算
         responseChange: -5.6, // 需要对比计算
@@ -362,7 +360,7 @@ export class LogAnalyzer {
       return JSON.parse(line);
     } catch {
       // 尝试匹配常见的日志格式
-      const match = line.match(/\[(\w+)\]\s*(.+)/);
+      const match = /\[(\w+)\]\s*(.+)/.exec(line);
       if (match) {
         return {
           level: match[1],
@@ -397,7 +395,7 @@ export class LogAnalyzer {
         
         result.data.result.forEach(item => {
           const service = item.metric.job || 'unknown';
-          const count = parseInt(item.value?.[1] || '0');
+          const count = Number.parseInt(item.value?.[1] || '0');
           
           if (!serviceMap.has(service)) {
             serviceMap.set(service, {
@@ -409,7 +407,8 @@ export class LogAnalyzer {
             });
           }
           
-          const serviceData = serviceMap.get(service)!;
+          const serviceData = serviceMap.get(service);
+          if (!serviceData) return;
           serviceData[level as 'critical' | 'error' | 'warning'] = count;
           serviceData.total += count;
         });
@@ -467,8 +466,8 @@ export class LogAnalyzer {
             });
           }
           
-          const data = timeMap.get(timeKey)!;
-          data[percentile as 'p50' | 'p95' | 'p99'] = parseFloat(value);
+          const data = timeMap.get(timeKey);
+          if (data) data[percentile as 'p50' | 'p95' | 'p99'] = Number.parseFloat(value);
         });
       });
 

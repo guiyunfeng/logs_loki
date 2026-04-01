@@ -2,7 +2,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { Activity, AlertCircle } from 'lucide-react';
 
 interface ErrorTrendPanelProps {
-  data: Array<{ time: string; critical: number; error: number; warning: number }>;
+  readonly data: Array<{ time: string; critical: number; error: number; warning: number }>;
 }
 
 export function ErrorTrendPanel({ data }: ErrorTrendPanelProps) {

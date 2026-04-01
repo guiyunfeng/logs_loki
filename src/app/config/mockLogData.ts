@@ -9,7 +9,7 @@ export interface LogEntry {
   hostname: string;
   project: string;
   service: string;
-  severity: 'CRITICAL' | 'ERROR' | 'WARNING' | 'INFO';
+  severity: 'CRITICAL' | 'ERROR' | 'WARNING' | 'INFO' | 'HIGH' | 'MEDIUM' | 'LOW';
   message: string;
   errorCategory?: string;
   errorCode?: string;
@@ -201,9 +201,9 @@ export function aggregateByDimension(logs: LogEntry[], dimension: 'project' | 's
 
 // 按项目聚合，展示每个项目下各服务的错误数（仅 ERROR+CRITICAL）
 export function getProjectServiceErrorBreakdown(logs: LogEntry[]) {
-  const errorLogs = logs.filter(l => l.severity === 'ERROR' || l.severity === 'CRITICAL');
+  const errorLogs = logs;
   
-  const allServices = [...new Set(errorLogs.map(l => l.service))].sort();
+  const allServices = [...new Set(errorLogs.map(l => l.service))].sort((left, right) => left.localeCompare(right));
   
   const projectMap: Record<string, Record<string, number>> = {};
   errorLogs.forEach(log => {
@@ -229,8 +229,17 @@ export function getProjectServiceErrorBreakdown(logs: LogEntry[]) {
 
 // Top N 错误消息
 export function getTopErrors(logs: LogEntry[], topN: number = 10) {
-  const errorLogs = logs.filter(log => log.severity === 'ERROR' || log.severity === 'CRITICAL');
+  const errorLogs = logs;
   const messageCount: Record<string, { message: string; count: number; severity: string; category?: string }> = {};
+  const severityRank: Record<string, number> = {
+    CRITICAL: 4,
+    HIGH: 3,
+    MEDIUM: 2,
+    LOW: 1,
+    ERROR: 3,
+    WARNING: 2,
+    INFO: 1,
+  };
   
   errorLogs.forEach(log => {
     if (!messageCount[log.message]) {
@@ -242,6 +251,9 @@ export function getTopErrors(logs: LogEntry[], topN: number = 10) {
       };
     }
     messageCount[log.message].count++;
+    if (severityRank[log.severity] > severityRank[messageCount[log.message].severity]) {
+      messageCount[log.message].severity = log.severity;
+    }
   });
   
   return Object.values(messageCount)

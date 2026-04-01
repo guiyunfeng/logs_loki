@@ -1,8 +1,8 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { AlertCircle } from 'lucide-react';
 
 interface ErrorTypePanelProps {
-  data: Array<{ name: string; value: number; color: string }>;
+  readonly data: Array<{ name: string; value: number; color: string }>;
 }
 
 export function ErrorTypePanel({ data }: ErrorTypePanelProps) {
@@ -29,8 +29,8 @@ export function ErrorTypePanel({ data }: ErrorTypePanelProps) {
                 fill="#8884d8"
                 dataKey="value"
               >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {data.map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={entry.color} />
                 ))}
               </Pie>
               <Tooltip />
@@ -43,8 +43,8 @@ export function ErrorTypePanel({ data }: ErrorTypePanelProps) {
             <div className="text-sm text-gray-600 mb-4">
               总错误数: <span className="font-bold text-xl text-gray-900">{total}</span>
             </div>
-            {data.map((item, index) => (
-              <div key={index} className="flex items-center justify-between">
+            {data.map((item) => (
+              <div key={item.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
                   <span className="text-sm">{item.name}</span>

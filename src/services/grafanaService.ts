@@ -12,7 +12,7 @@ const grafanaService = axios.create(grafanaConfig);
 
 // 添加认证拦截器
 grafanaService.interceptors.request.use((config) => {
-  const apiKey = 'glsa_NrzU7jjl245rfnD8MusOzWJujRtc1Col_3c978ec3';
+  const apiKey = import.meta.env.VITE_GRAFANA_API_KEY || '';
   if (apiKey) {
     config.headers.Authorization = `Bearer ${apiKey}`;
   }
