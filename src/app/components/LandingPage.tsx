@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { BarChart3, GitBranch, Monitor, ArrowRight, Database, Shield, Activity, Zap, Layers, Server, Bell, Phone, MessageSquare, Network, Workflow, TrendingUp, Brain, Target } from 'lucide-react';
+import { BarChart3, Monitor, ArrowRight, Database, Activity, Layers, Server, Bell, Phone, Brain } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -12,45 +12,6 @@ const features = [
   { icon: <BarChart3 className="w-5 h-5" />, label: 'Grafana 可视化分析' },
   { icon: <Bell className="w-5 h-5" />, label: '多级别智能告警' },
   { icon: <Phone className="w-5 h-5" />, label: '钉钉 / 电话告警通知' },
-];
-
-const cards = [
-  {
-    id: 'advanced',
-    title: '🚀 高级分析 (新)',
-    description: '实时监控、服务健康评估、SLO 跟踪、根因分析',
-    icon: <Brain className="w-6 h-6" />,
-    gradient: 'from-pink-500 to-rose-500',
-    features: ['实时监控', '服务健康', 'SLO 跟踪', '根因分析'],
-    path: '/advanced',
-  },
-  {
-    id: 'flow',
-    title: '日志处理流程',
-    description: '可视化展示从日志产生到告警的完整链路',
-    icon: <Workflow className="w-6 h-6" />,
-    gradient: 'from-blue-500 to-cyan-500',
-    features: ['Pipeline Stages', 'Label 提取', '清理模拟'],
-    path: '/flow',
-  },
-  {
-    id: 'system',
-    title: 'Grafana 监控',
-    description: 'Dashboard 面板 + 分级告警 + 实时看板',
-    icon: <TrendingUp className="w-6 h-6" />,
-    gradient: 'from-purple-500 to-pink-500',
-    features: ['实时监控', '告警规则', '钉钉通知'],
-    path: '/system',
-  },
-  {
-    id: 'analytics',
-    title: '日志统计分析',
-    description: '趋势图表 + 多维度统计 + Top N 错误',
-    icon: <BarChart3 className="w-6 h-6" />,
-    gradient: 'from-emerald-500 to-teal-500',
-    features: ['错误趋势', '分组统计', '实时日志流'],
-    path: '/analytics',
-  },
 ];
 
 export function LandingPage() {
@@ -137,7 +98,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl mx-auto mb-16"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto mb-16"
           >
             {/* Entry 0: Advanced Analytics (NEW) */}
             <button
@@ -149,7 +110,7 @@ export function LandingPage() {
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                   <Brain className="w-7 h-7 text-pink-400" />
                 </div>
-                <h2 className="text-xl font-semibold mb-2 text-white">🚀 高级分析 (新)</h2>
+                <h2 className="text-xl font-semibold mb-2 text-white">🚀 高级分析</h2>
                 <p className="text-sm text-gray-400 leading-relaxed mb-6">
                   实时监控、服务健康评估、SLO跟踪、根因分析、性能监控。
                 </p>
@@ -181,28 +142,7 @@ export function LandingPage() {
               </div>
             </button>
 
-            {/* Entry 2: Flow Visualization */}
-            <button
-              onClick={() => navigate('/flow')}
-              className="group relative bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/60 rounded-2xl p-8 text-left transition-all duration-300 hover:border-purple-500/50 hover:shadow-[0_0_40px_rgba(139,92,246,0.12)] cursor-pointer"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors" />
-              <div className="relative">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 border border-purple-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                  <GitBranch className="w-7 h-7 text-purple-400" />
-                </div>
-                <h2 className="text-xl font-semibold mb-2 text-white">日志处理</h2>
-                <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                  Promtail Pipeline 预处理流程，日志归一化策略，在线模拟器实时预览清洗效果。
-                </p>
-                <div className="flex items-center gap-2 text-purple-400 text-sm font-medium group-hover:gap-3 transition-all">
-                  查看流程
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
-            </button>
-
-            {/* Entry 3: Monitoring System */}
+            {/* Entry 2: Monitoring System */}
             <button
               onClick={() => navigate('/system')}
               className="group relative bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/60 rounded-2xl p-8 text-left transition-all duration-300 hover:border-indigo-500/50 hover:shadow-[0_0_40px_rgba(99,102,241,0.12)] cursor-pointer"

@@ -9,6 +9,7 @@ import {
 import { motion } from 'motion/react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, AreaChart, Area } from 'recharts';
 import { generateMockLogs } from '../config/mockLogData';
+import { queryLoki } from '../../services/lokiService';
 
 interface AnalysisReport {
   timestamp: string;
@@ -94,10 +95,72 @@ export function AdvancedAnalyticsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<string>('');
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [mockLogs, setMockLogs] = useState<any[]>([]);
 
-  const mockLogs = useMemo(() => generateMockLogs(2000), []);
+  // 从 Loki 加载数据
+  useEffect(() => {
+    const loadLogsFromLoki = async () => {
+      setIsLoading(true);
+      try {
+        const hours = timeRangeHours[timeRange];
+        const end = Math.floor(Date.now() / 1000); // Unix 秒
+        const start = end - hours * 60 * 60;
 
-  // 核心分析逻辑（模拟 AdvancedLokiService）
+        console.log('Advanced Dashboard - 开始查询 Loki，时间范围:', { start, end, timeRange });
+        // 尝试从 Loki 获取数据
+        const response = await queryLoki('{job!=""}', start, end);
+        console.log('Advanced Dashboard - Loki 查询响应:', response);
+
+        if (response.data?.result?.length > 0) {
+          // 转换 Loki 数据格式
+          const lokiLogs: any[] = [];
+          response.data.result.forEach((stream: any) => {
+            const labels = stream.stream || {};
+            // 从 filename 提取 project/app
+            const fileMatch = /\/logs\/([^/]+)\/([^/]+)\/error\.log/.exec(labels.filename || '');
+            const fileMatch2 = /\/logs\/([^/]+)\/error\.log/.exec(labels.filename || '');
+            const project = labels.project || (fileMatch ? fileMatch[1] : fileMatch2 ? fileMatch2[1] : 'unknown');
+            const app = labels.app || (fileMatch ? fileMatch[2] : 'unknown');
+
+            if (stream.values && Array.isArray(stream.values)) {
+              stream.values.forEach((value: [string, string]) => {
+                const [timestamp, rawMsg] = value;
+                // 解析 JSON 日志体
+                let message = rawMsg;
+                try {
+                  const parsed = JSON.parse(rawMsg);
+                  message = parsed.content || parsed.message || parsed.msg || rawMsg;
+                } catch { /* 非 JSON 直接使用 */ }
+
+                lokiLogs.push({
+                  timestamp: new Date(Number(timestamp) / 1000000).toISOString(),
+                  severity: (labels.level || 'error').toUpperCase(),
+                  message,
+                  service: labels.job || labels.service_name || 'unknown',
+                  project,
+                  server: labels.job || labels.service_name || 'unknown',
+                });
+              });
+            }
+          });
+          console.log('Advanced Dashboard - 转换后的日志数量:', lokiLogs.length);
+          setMockLogs(lokiLogs);
+        } else {
+          // 如果 Loki 无数据，使用模拟数据
+          console.log('Advanced Dashboard - Loki 无数据，使用模拟数据');
+          setMockLogs(generateMockLogs(2000));
+        }
+      } catch (error) {
+        console.error('Advanced Dashboard - 从 Loki 加载数据失败:', error);
+        setMockLogs(generateMockLogs(2000));
+      } finally {
+        setIsLoading(false);
+        setLastUpdate(new Date().toLocaleTimeString());
+      }
+    };
+
+    loadLogsFromLoki();
+  }, [timeRange]);
   const generateAnalysisReport = (logs: any[], hours: number): AnalysisReport => {
     const cutoffTime = Date.now() - hours * 60 * 60 * 1000;
     const filteredLogs = logs.filter(

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>流程说明</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --panel: #111827;
+        --panel-soft: #172033;
+        --line: #243047;
+        --text: #e5eefc;
+        --muted: #98a6c3;
+        --accent: #60a5fa;
+        --accent-2: #22c55e;
+        --warn: #f59e0b;
+        --danger: #ef4444;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background:
+          radial-gradient(circle at top right, rgba(96, 165, 250, 0.14), transparent 28%),
+          radial-gradient(circle at left center, rgba(34, 197, 94, 0.08), transparent 22%),
+          var(--bg);
+        color: var(--text);
+        line-height: 1.65;
+      }
+
+      .wrap {
+        width: min(1200px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 56px;
+      }
+
+      .hero {
+        border: 1px solid var(--line);
+        background: linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(12, 18, 30, 0.92));
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        font-size: 12px;
+        color: var(--accent);
+        border: 1px solid rgba(96, 165, 250, 0.35);
+        background: rgba(96, 165, 250, 0.08);
+        border-radius: 999px;
+      }
+
+      h1 {
+        margin: 16px 0 10px;
+        font-size: clamp(32px, 4.6vw, 54px);
+        line-height: 1.1;
+      }
+
+      .subtitle {
+        max-width: 860px;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .quick-links {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 22px;
+      }
+
+      .quick-link {
+        border: 1px solid var(--line);
+        background: rgba(23, 32, 51, 0.82);
+        border-radius: 18px;
+        padding: 16px 18px;
+      }
+
+      .quick-link strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 16px;
+      }
+
+      .quick-link span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .section {
+        margin-top: 28px;
+        border: 1px solid var(--line);
+        background: rgba(17, 24, 39, 0.92);
+        border-radius: 24px;
+        padding: 28px;
+      }
+
+      h2 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+
+      h3 {
+        margin: 0 0 10px;
+        font-size: 20px;
+      }
+
+      p,
+      li,
+      td,
+      th {
+        color: var(--text);
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        background: var(--panel-soft);
+        border-radius: 18px;
+        padding: 20px;
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid rgba(152, 166, 195, 0.2);
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .step-list,
+      .plain-list {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .step-list li,
+      .plain-list li {
+        margin: 8px 0;
+      }
+
+      .panel-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .tag {
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+      }
+
+      .tag-blue {
+        color: #93c5fd;
+        background: rgba(59, 130, 246, 0.12);
+        border-color: rgba(59, 130, 246, 0.25);
+      }
+
+      .tag-green {
+        color: #86efac;
+        background: rgba(34, 197, 94, 0.12);
+        border-color: rgba(34, 197, 94, 0.25);
+      }
+
+      .tag-orange {
+        color: #fcd34d;
+        background: rgba(245, 158, 11, 0.12);
+        border-color: rgba(245, 158, 11, 0.25);
+      }
+
+      .matrix {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 14px;
+      }
+
+      .matrix th,
+      .matrix td {
+        border: 1px solid var(--line);
+        padding: 12px 14px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .matrix th {
+        background: rgba(96, 165, 250, 0.08);
+      }
+
+      .ok {
+        color: var(--accent-2);
+        font-weight: 600;
+      }
+
+      .warn {
+        color: var(--warn);
+        font-weight: 600;
+      }
+
+      .danger {
+        color: var(--danger);
+        font-weight: 600;
+      }
+
+      .mermaid {
+        margin-top: 16px;
+        padding: 16px;
+        border-radius: 18px;
+        background: #0f172a;
+        overflow-x: auto;
+      }
+
+      .footer {
+        margin-top: 24px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      a {
+        color: #93c5fd;
+      }
+
+      @media (max-width: 960px) {
+        .quick-links,
+        .grid-2,
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+
+        .section,
+        .hero {
+          padding: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="hero">
+        <div class="eyebrow">流程说明页</div>
+        <h1>日志平台流程说明</h1>
+        <p class="subtitle">
+          本说明页重点描述日志从采集、存储、查询、转换到三个主面板展示的完整链路，以及日常排查时每个页面承担的职责。
+        </p>
+
+        <div class="quick-links">
+          <div class="quick-link">
+            <strong>高级分析</strong>
+            <span>看整体风险、服务健康、异常检测、根因和预测洞察。</span>
+          </div>
+          <div class="quick-link">
+            <strong>日志统计分析</strong>
+            <span>看趋势、分布、Top N 错误以及多维筛选结果。</span>
+          </div>
+          <div class="quick-link">
+            <strong>Grafana 面板</strong>
+            <span>看实时监控、告警列表、日志流和服务聚合视图。</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>系统使用说明</h2>
+        <p class="muted">
+          当前系统首页提供 3 个主入口，建议排查顺序为：先看整体，再看分布，最后看实时状态。
+        </p>
+
+        <div class="grid grid-3">
+          <div class="card">
+            <h3>首页入口</h3>
+            <ol class="step-list">
+              <li>高级分析：先看风险范围和受影响服务。</li>
+              <li>日志统计分析：再看错误趋势、Top N 和筛选结果。</li>
+              <li>Grafana 面板：最后看实时告警和日志流是否仍在持续。</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h3>时间范围</h3>
+            <ol class="step-list">
+              <li>页面加载时根据默认时间窗口发起 Loki 查询。</li>
+              <li>切换时间范围后重新计算开始时间和结束时间。</li>
+              <li>前端按当前窗口重新聚合趋势、Top N 和服务维度数据。</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h3>数据降级</h3>
+            <ol class="step-list">
+              <li>Loki 查询成功时显示真实数据。</li>
+              <li>若 Loki 无数据或查询失败，则回退到 mock 数据。</li>
+              <li>保证页面在演示、验证和排查时不出现空白页。</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>1. 数据从哪来</h2>
+        <p class="muted">
+          当前代码中的数据主链路是“业务错误日志 → Promtail 标签化 → Loki 存储 → 前端 LogQL 查询 → 本地转换聚合 → 各分析面板展示”。
+        </p>
+
+        <div class="mermaid">
+flowchart TD
+    A[业务服务输出 error.log] --> B[Promtail 采集与打标签]
+    B --> C[Loki 存储日志流]
+    C --> D[前端发起 LogQL 查询]
+    D --> E[前端标准化转换]
+    E --> F1[高级分析页]
+    E --> F2[日志统计分析页]
+    E --> F3[Grafana 面板页]
+    F1 --> G[服务健康 根因 异常 预测]
+    F2 --> H[趋势 分布 TopN 筛选]
+    F3 --> I[仪表盘 告警 日志流]
+    I --> J[告警分级与通知展示]
+    C -. 查询失败或无数据 .-> K[Mock 数据降级]
+    K -. 保持页面可用 .-> F1
+    K -. 保持页面可用 .-> F2
+    K -. 保持页面可用 .-> F3
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>采集与存储</h3>
+            <ol class="step-list">
+              <li>业务服务持续产出错误日志文件。</li>
+              <li>Promtail 负责采集日志，并补充 job、level、project、app、error_type、filename 等标签。</li>
+              <li>Loki 负责保存日志流，并支持按时间范围与标签进行检索。</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h3>前端查询与转换</h3>
+            <ol class="step-list">
+              <li>前端通过 LogQL 查询指定时间范围内的日志流。</li>
+              <li>把纳秒时间戳转为可读时间，并尝试解析 JSON 日志正文。</li>
+              <li>若 project/app 缺失，则从 filename 中补全归属信息。</li>
+              <li>把 level 统一成大写，保证筛选和聚合逻辑一致。</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>2. 页面与面板对应关系</h2>
+        <p class="muted">
+          三个主页面复用同一批 Loki 原始数据，但每个页面的聚合方式和展示重点不同。
+        </p>
+
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>页面</th>
+              <th>核心目标</th>
+              <th>主要展示内容</th>
+              <th>适合回答的问题</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>高级分析</td>
+              <td>洞察整体风险</td>
+              <td>总日志量、错误率、服务健康、根因、异常、预测</td>
+              <td>系统当前稳不稳？风险在扩大还是回落？</td>
+            </tr>
+            <tr>
+              <td>日志统计分析</td>
+              <td>快速定位问题</td>
+              <td>趋势图、级别分布、项目服务拆分、Top N、筛选器</td>
+              <td>哪里报错最多？哪个项目和服务最值得优先排查？</td>
+            </tr>
+            <tr>
+              <td>Grafana 面板</td>
+              <td>实时监控与告警展示</td>
+              <td>指标卡、错误类型、趋势、告警列表、实时日志流、服务维度</td>
+              <td>错误是否还在持续？是否已经达到高等级告警？</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h2>3. 一次日常排查怎么使用这套系统</h2>
+        <p class="muted">
+          建议流程是“先看整体，再看重点，再看实时，最后回到业务系统修复并持续观察趋势”。
+        </p>
+
+        <div class="mermaid">
+flowchart LR
+    A[进入首页] --> B[高级分析]
+    B --> C[确认错误率与受影响服务]
+    C --> D[日志统计分析]
+    D --> E[查看趋势 分布 TopN]
+    E --> F[Grafana 面板]
+    F --> G[确认实时告警与日志流]
+    G --> H[返回业务系统修复]
+    H --> I[再次观察趋势是否回落]
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>推荐动作顺序</h3>
+            <ol class="step-list">
+              <li>先进入高级分析，判断问题是局部异常还是系统性异常。</li>
+              <li>再进入日志统计分析，锁定高发时段、高频错误和集中服务。</li>
+              <li>最后进入 Grafana 面板，看实时日志和告警是否还在持续发生。</li>
+              <li>根据结果返回业务系统、配置项或依赖服务进行修复。</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h3>排查产出</h3>
+            <ol class="step-list">
+              <li>知道影响范围：几个项目、几个服务、哪些服务器。</li>
+              <li>知道主要问题：哪类错误最常见、哪条错误最频繁。</li>
+              <li>知道当前状态：是否仍在发生、告警是否升级。</li>
+              <li>知道修复效果：趋势是否回落，日志流是否恢复平稳。</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>4. 三个主页面关注点</h2>
+
+        <div class="grid grid-3">
+          <div class="card">
+            <div class="panel-title">
+              <h3>高级分析</h3>
+              <span class="tag tag-blue">整体洞察</span>
+            </div>
+            <ul class="plain-list">
+              <li>汇总总日志量、总错误量、错误率和受影响服务数。</li>
+              <li>根据服务错误比例计算 healthy、degraded、critical 状态。</li>
+              <li>从错误模式中提取根因线索和异常波动点。</li>
+              <li>输出性能画像和预测性风险提示。</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge">服务健康</span>
+              <span class="badge">根因分析</span>
+              <span class="badge">异常检测</span>
+              <span class="badge">预测洞察</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="panel-title">
+              <h3>日志统计分析</h3>
+              <span class="tag tag-green">快速定位</span>
+            </div>
+            <ul class="plain-list">
+              <li>支持按时间范围、级别、服务器、项目、服务和关键字过滤。</li>
+              <li>展示错误时间趋势，识别异常峰值与高发时段。</li>
+              <li>展示严重级别分布与项目服务拆分。</li>
+              <li>展示 Top N 错误，帮助确定优先治理项。</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge">趋势图</span>
+              <span class="badge">分布图</span>
+              <span class="badge">Top N</span>
+              <span class="badge">多维筛选</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="panel-title">
+              <h3>Grafana 面板</h3>
+              <span class="tag tag-orange">实时监控</span>
+            </div>
+            <ul class="plain-list">
+              <li>显示指标卡、错误类型分布和最近 24 小时趋势。</li>
+              <li>把日志按项目和应用聚合成告警列表。</li>
+              <li>展示最近日志流，用于判断异常是否仍在持续。</li>
+              <li>展示服务或服务器维度的受影响情况。</li>
+            </ul>
+            <div class="badge-row">
+              <span class="badge">指标卡</span>
+              <span class="badge">告警列表</span>
+              <span class="badge">实时日志流</span>
+              <span class="badge">服务聚合</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>5. 告警与处置闭环</h2>
+        <p class="muted">
+          当前代码中的告警更偏“前端可视化判断”，核心是按项目、应用或服务聚合错误，再映射为不同严重等级，辅助值班和处置。
+        </p>
+
+        <div class="mermaid">
+flowchart LR
+    A[错误日志持续出现] --> B[前端聚合统计]
+    B --> C[判断频次与影响范围]
+    C --> D[映射为 warning error critical]
+    D --> E[告警列表展示]
+    E --> F[研发或运维介入处理]
+    F --> G[返回页面继续观察]
+    G --> H{趋势是否回落}
+    H -- 是 --> I[恢复日常监控]
+    H -- 否 --> J[继续升级排查]
+        </div>
+
+        <div class="grid grid-3">
+          <div class="card">
+            <h3>告警判断</h3>
+            <ul class="plain-list">
+              <li><span class="warn">warning</span>：错误出现但影响范围有限。</li>
+              <li><span class="danger">error</span>：错误频次上升，需要尽快介入。</li>
+              <li><span class="danger">critical</span>：错误数量或影响面明显扩大，需要升级处理。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>运维动作</h3>
+            <ul class="plain-list">
+              <li>确认是单服务问题还是公共依赖问题。</li>
+              <li>结合 Top N 错误和实时日志流快速定位异常来源。</li>
+              <li>修复后持续观察趋势和告警列表是否回落。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>系统价值</h3>
+            <ul class="plain-list">
+              <li>把原始日志变成可读、可筛选、可汇报的监控结果。</li>
+              <li>让“看日志”变成“看趋势、看影响面、看告警”。</li>
+              <li>在 Loki 异常时依然保证页面有可演示和可验证数据。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>6. 当前实现中的关键字段说明</h2>
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>字段</th>
+              <th>来源</th>
+              <th>用途</th>
+              <th>当前处理方式</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>job</td>
+              <td>Promtail 标签</td>
+              <td>识别服务器或服务源</td>
+              <td>用于服务聚合和服务器筛选</td>
+            </tr>
+            <tr>
+              <td>level</td>
+              <td>Promtail 标签</td>
+              <td>识别日志级别</td>
+              <td>统一转成大写后参与筛选</td>
+            </tr>
+            <tr>
+              <td>project / app</td>
+              <td>标签或 filename</td>
+              <td>识别项目与应用归属</td>
+              <td>优先取标签，缺失时从 filename 补全</td>
+            </tr>
+            <tr>
+              <td>error_type</td>
+              <td>Promtail 标签</td>
+              <td>错误归类</td>
+              <td>做简化处理后用于分布和 Top N 统计</td>
+            </tr>
+            <tr>
+              <td>content / message / msg</td>
+              <td>日志正文 JSON</td>
+              <td>展示错误信息</td>
+              <td>按优先级解析，解析失败回退原文</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="footer">
+        
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        securityLevel: 'loose',
+        themeVariables: {
+          primaryColor: '#172033',
+          primaryTextColor: '#e5eefc',
+          primaryBorderColor: '#243047',
+          lineColor: '#60a5fa',
+          secondaryColor: '#0f172a',
+          tertiaryColor: '#111827',
+          fontFamily: 'Segoe UI, PingFang SC, Microsoft YaHei, sans-serif'
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft, TrendingUp, TrendingDown, AlertTriangle,
@@ -17,6 +17,7 @@ import {
   getLogStatistics,
 } from '../config/mockLogData';
 import { MultiSelectDropdown } from './MultiSelectDropdown';
+import { queryLoki } from '../../services/lokiService';
 
 type TimeRange = '15m' | '30m' | '1h' | '6h' | '12h' | '24h' | '3d' | '7d';
 
@@ -37,8 +38,70 @@ export function LogAnalyticsPage() {
   const [selectedServers, setSelectedServers] = useState<string[]>([]);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [isLoadingLoki, setIsLoadingLoki] = useState(false);
   
-  const allLogs = useMemo(() => generateMockLogs(2000), []);
+  // 尝试从 Loki 加载真实数据，如果失败则使用模拟数据  
+  const [useLokiData, setUseLokiData] = useState(false);
+  const [allLogs, setAllLogs] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // 尝试从 Loki 获取数据
+        const end = Math.floor(Date.now() / 1000); // Unix 秒
+        const start = end - TIME_RANGE_MINUTES[timeRange] * 60;
+        
+        console.log('开始查询 Loki，时间范围:', { start, end, timeRange });
+        const response = await queryLoki('{job!=""}', start, end);
+        console.log('Loki 查询响应:', response);
+        
+        if (response.data?.result?.length > 0) {
+          // 转换 Loki 数据格式
+          const lokiLogs: any[] = [];
+          response.data.result.forEach((stream: any) => {
+            const labels = stream.stream || {};
+            // 从 filename 提取 project/app
+            const fileMatch = /\/logs\/([^/]+)\/([^/]+)\/error\.log/.exec(labels.filename || '');
+            const fileMatch2 = /\/logs\/([^/]+)\/error\.log/.exec(labels.filename || '');
+            const project = labels.project || (fileMatch ? fileMatch[1] : fileMatch2 ? fileMatch2[1] : 'unknown');
+            const app = labels.app || (fileMatch ? fileMatch[2] : 'unknown');
+
+            if (stream.values && Array.isArray(stream.values)) {
+              stream.values.forEach((value: [string, string]) => {
+                const [timestamp, rawMsg] = value;
+                // 解析 JSON 日志体
+                let message = rawMsg;
+                try {
+                  const parsed = JSON.parse(rawMsg);
+                  message = parsed.content || parsed.message || parsed.msg || rawMsg;
+                } catch { /* 非 JSON 直接使用 */ }
+
+                lokiLogs.push({
+                  timestamp: new Date(Number(timestamp) / 1000000).toISOString(),
+                  severity: (labels.level || 'error').toUpperCase(),
+                  message,
+                  service: `${project}/${app}`,
+                  project,
+                  server: labels.job || labels.service_name || 'unknown',
+                });
+              });
+            }
+          });
+          console.log('转换后的日志数量:', lokiLogs.length);
+          setAllLogs(lokiLogs);
+        } else {
+          // 如果 Loki 无数据，使用模拟数据
+          console.log('Loki 无数据，使用模拟数据');
+          setAllLogs(generateMockLogs(2000));
+        }
+      } catch (error) {
+        console.error('从 Loki 加载数据失败:', error);
+        setAllLogs(generateMockLogs(2000));
+      }
+    };
+
+    loadData();
+  }, [timeRange]);
 
   const allServers = useMemo(() => [...new Set(allLogs.map(l => l.server))].sort(), [allLogs]);
   const allProjects = useMemo(() => [...new Set(allLogs.map(l => l.project))].sort(), [allLogs]);
@@ -125,13 +188,6 @@ export function LogAnalyticsPage() {
               <button className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm transition-colors border border-gray-700">
                 <RefreshCw className="w-4 h-4" />
                 <span className="hidden sm:inline">刷新</span>
-              </button>
-              <button
-                onClick={() => navigate('/flow')}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-700"
-              >
-                <Activity className="w-4 h-4" />
-                日志处理
               </button>
               <button
                 onClick={() => navigate('/system')}

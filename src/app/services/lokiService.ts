@@ -43,7 +43,7 @@ export class LokiService {
   async query(query: string, time?: number): Promise<LokiQueryResult> {
     const params = new URLSearchParams({
       query,
-      time: time ? time.toString() : (Date.now() * 1000000).toString(), // 纳秒
+      time: time ? time.toString() : Math.floor(Date.now() / 1000).toString(), // Unix 秒
       limit: this.config.defaultQueryLimit!.toString(),
     });
 

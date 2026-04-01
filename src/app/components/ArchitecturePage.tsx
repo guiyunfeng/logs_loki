@@ -35,13 +35,6 @@ export function ArchitecturePage() {
           </div>
           <div className="flex gap-3">
             <button
-              onClick={() => navigate('/flow')}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-700"
-            >
-              <Code className="w-4 h-4" />
-              日志处理
-            </button>
-            <button
               onClick={() => navigate('/system')}
               className="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-medium transition-colors"
             >

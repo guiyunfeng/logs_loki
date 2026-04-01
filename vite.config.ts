@@ -19,4 +19,15 @@ export default defineConfig({
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
+
+  // 代理配置，解决 CORS 问题
+  server: {
+    proxy: {
+      '/loki': {
+        target: 'https://loki.goingf.hk',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/loki/, ''),
+      },
+    },
+  },
 })
