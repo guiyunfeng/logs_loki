@@ -1,0 +1,727 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "Loki 数据源",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "loki",
+      "name": "Loki",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "piechart",
+      "name": "Pie chart",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "barchart",
+      "name": "Bar chart",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "logs",
+      "name": "Logs",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "基于 Loki 的日志分析总览，支持按服务器、项目、服务多维度筛选",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "概览指标",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "description": "所选时间范围内的总日志量",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "title": "总日志量",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "总日志量",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "description": "所选时间范围内的错误日志数（ERROR + CRITICAL）",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "title": "错误日志数",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=~\"ERROR|CRITICAL\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "错误日志数",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "description": "所选时间范围内的警告日志数",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "orange", "value": null }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "title": "警告日志数",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=\"WARNING\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "警告日志数",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "__expr__", "uid": "__expr__" },
+      "description": "错误日志占总日志的百分比",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 0.05 },
+              { "color": "red", "value": 0.1 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "title": "错误率",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=~\"ERROR|CRITICAL\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "错误数",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "总日志数",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "__expr__", "uid": "__expr__" },
+          "expression": "$A / $B",
+          "hide": false,
+          "refId": "C",
+          "type": "math"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "错误趋势",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "description": "各日志级别随时间的变化趋势",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "日志数",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "ERROR" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CRITICAL" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "WARNING" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "INFO" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "DEBUG" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "gray", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 6 },
+      "id": 5,
+      "options": {
+        "legend": { "calcs": ["sum", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "日志级别趋势",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=\"CRITICAL\"} [1h]))",
+          "legendFormat": "CRITICAL",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=\"ERROR\"} [1h]))",
+          "legendFormat": "ERROR",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=\"WARNING\"} [1h]))",
+          "legendFormat": "WARNING",
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=\"INFO\"} [1h]))",
+          "legendFormat": "INFO",
+          "refId": "D"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=\"DEBUG\"} [1h]))",
+          "legendFormat": "DEBUG",
+          "refId": "E"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "description": "各服务的错误日志分布（ERROR + CRITICAL）",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false } },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 6 },
+      "id": 6,
+      "options": {
+        "displayLabels": ["name", "percent"],
+        "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true, "values": ["value", "percent"] },
+        "pieType": "pie",
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "按服务错误分布",
+      "type": "piechart",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum by(service)(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=~\"ERROR|CRITICAL\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 102,
+      "title": "详细分析",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "description": "各项目的错误日志统计",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "错误数",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineWidth": 1,
+            "scaleDistribution": { "type": "linear" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "id": 7,
+      "options": {
+        "barRadius": 0.05,
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": { "mode": "single", "sort": "none" },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "title": "按项目错误统计",
+      "type": "barchart",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum by(project)(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=~\"ERROR|CRITICAL\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "{{project}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "description": "各服务器的错误日志统计",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "错误数",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineWidth": 1,
+            "scaleDistribution": { "type": "linear" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "id": 8,
+      "options": {
+        "barRadius": 0.05,
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": { "mode": "single", "sort": "none" },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "title": "按服务器错误统计",
+      "type": "barchart",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "sum by(server)(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=~\"ERROR|CRITICAL\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "{{server}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 103,
+      "title": "Top 错误",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "description": "错误日志最多的 Top 10 服务（按服务器+项目+服务统计）",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [
+              { "id": "displayName", "value": "错误数" },
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "gradient", "type": "color-background" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "server" },
+            "properties": [{ "id": "displayName", "value": "服务器" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "project" },
+            "properties": [{ "id": "displayName", "value": "项目" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "service" },
+            "properties": [{ "id": "displayName", "value": "服务" }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "错误数" }]
+      },
+      "title": "Top 10 错误服务",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "topk(10, sum by(server, project, service)(count_over_time({server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=~\"ERROR|CRITICAL\"} [$__range])))",
+          "instant": true,
+          "legendFormat": "{{server}} / {{project}} / {{service}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "id": 104,
+      "title": "实时日志",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "description": "实时日志流，支持按 severity 级别和关键词搜索过滤",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 33 },
+      "id": 10,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "title": "日志流",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+          "expr": "{server=~\"$server\", project=~\"$project\", service=~\"$service\", severity=~\"$severity\"} |= \"$search\"",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["loki", "日志", "分析"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "definition": "label_values(server)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "服务器",
+        "multi": true,
+        "name": "server",
+        "options": [],
+        "query": "label_values(server)",
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "definition": "label_values({server=~\"$server\"}, project)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "项目",
+        "multi": true,
+        "name": "project",
+        "options": [],
+        "query": "label_values({server=~\"$server\"}, project)",
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "definition": "label_values({server=~\"$server\", project=~\"$project\"}, service)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "服务",
+        "multi": true,
+        "name": "service",
+        "options": [],
+        "query": "label_values({server=~\"$server\", project=~\"$project\"}, service)",
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": ["ERROR", "WARNING", "CRITICAL"],
+          "value": ["ERROR", "WARNING", "CRITICAL"]
+        },
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "definition": "label_values(severity)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "级别",
+        "multi": true,
+        "name": "severity",
+        "options": [],
+        "query": "label_values(severity)",
+        "refresh": 2,
+        "regex": "",
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": { "selected": false, "text": "", "value": "" },
+        "hide": 0,
+        "label": "搜索",
+        "name": "search",
+        "options": [{ "selected": false, "text": "", "value": "" }],
+        "query": "",
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "日志分析总览",
+  "uid": "log-analytics",
+  "version": 1,
+  "weekStart": ""
+}
