@@ -295,8 +295,8 @@
     },
     {
       "id": 4,
-      "type": "stat",
-      "title": "最近1小时错误数",
+      "type": "timeseries",
+      "title": "较昨日同期（最近1小时）",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -307,36 +307,13 @@
         "x": 16,
         "y": 1
       },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "#5794F2"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#5794F2",
-                "value": null
-              }
-            ]
-          },
-          "mappings": []
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1
+          }
         },
         "overrides": []
       },
@@ -347,11 +324,30 @@
             "uid": "${DS_LOKI}"
           },
           "expr": "sum(count_over_time({job=~\"$job\", project=~\"$project\", service=~\"$service\"} [1h]))",
-          "legendFormat": "",
+          "legendFormat": "当前1小时",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({job=~\"$job\", project=~\"$project\", service=~\"$service\"} [1h] offset 24h))",
+          "legendFormat": "昨日同期",
+          "refId": "B"
         }
       ],
-      "description": "当前1小时错误数，可与上方对比。参考值：昨日同期 = sum(count_over_time({...} [1h] offset 24h))"
+      "description": "当前1小时错误数 vs 昨日同期1小时错误数对比",
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
     },
     {
       "id": 5,
