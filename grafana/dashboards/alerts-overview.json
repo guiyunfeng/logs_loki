@@ -21,37 +21,103 @@
       "id": "loki",
       "name": "Loki",
       "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "alertlist",
-      "name": "Alert list",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "text",
-      "name": "Text",
-      "version": ""
     }
   ],
+  "id": null,
+  "uid": "alerts-overview",
+  "title": "告警与监控",
+  "tags": [
+    "loki",
+    "告警",
+    "监控"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        },
+        "definition": "label_values(job)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "job",
+        "label": "服务器",
+        "options": [],
+        "query": {
+          "query": "label_values(job)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        },
+        "definition": "label_values({job=~\"$job\"}, project)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "project",
+        "label": "项目",
+        "options": [],
+        "query": {
+          "query": "label_values({job=~\"$job\"}, project)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        },
+        "definition": "label_values({job=~\"$job\", project=~\"$project\"}, service)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "service",
+        "label": "服务",
+        "options": [],
+        "query": {
+          "query": "label_values({job=~\"$job\", project=~\"$project\"}, service)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
   "annotations": {
     "list": [
       {
         "builtIn": 1,
-        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -60,424 +126,527 @@
       }
     ]
   },
-  "description": "告警总览：当前活跃告警、错误率趋势监控、告警规则建议",
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 1,
-  "id": null,
-  "links": [],
   "panels": [
     {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
-      "id": 100,
-      "title": "告警状态",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "grafana", "uid": "-- Grafana --" },
-      "description": "当前处于 Alerting 状态的告警数",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 1 }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
       "id": 1,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "title": "Alerting 告警数",
-      "type": "stat",
-      "targets": [
-        {
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "expr": "sum(count_over_time({severity=\"CRITICAL\"} [5m]))",
-          "legendFormat": "CRITICAL 告警",
-          "refId": "A"
-        }
-      ]
+      "type": "row",
+      "title": "实时监控",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
     },
     {
-      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-      "description": "5 分钟内 ERROR 级别日志数（Pending 状态参考）",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "orange", "value": 10 },
-              { "color": "red", "value": 50 }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
       "id": 2,
+      "type": "stat",
+      "title": "最近5分钟错误数",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
       "options": {
         "colorMode": "background",
         "graphMode": "none",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
         "textMode": "auto"
       },
-      "title": "近 5 分钟错误数",
-      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
       "targets": [
         {
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "expr": "sum(count_over_time({severity=~\"ERROR|CRITICAL\"} [5m]))",
-          "instant": true,
-          "legendFormat": "错误数",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({job=~\"$job\", project=~\"$project\", service=~\"$service\"} [5m]))",
+          "legendFormat": "",
           "refId": "A"
         }
       ]
     },
     {
-      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-      "description": "近 5 分钟 WARNING 级别日志数",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 20 },
-              { "color": "orange", "value": 100 }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
       "id": 3,
+      "type": "stat",
+      "title": "最近1小时错误数",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
       "options": {
         "colorMode": "background",
         "graphMode": "none",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
         "textMode": "auto"
       },
-      "title": "近 5 分钟警告数",
-      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 200
+              }
+            ]
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
       "targets": [
         {
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "expr": "sum(count_over_time({severity=\"WARNING\"} [5m]))",
-          "instant": true,
-          "legendFormat": "警告数",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({job=~\"$job\", project=~\"$project\", service=~\"$service\"} [1h]))",
+          "legendFormat": "",
           "refId": "A"
         }
       ]
     },
     {
-      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-      "description": "最近 24 小时的错误日志总数",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "orange", "value": 100 },
-              { "color": "red", "value": 500 }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
       "id": 4,
+      "type": "stat",
+      "title": "错误速率 (条/秒)",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
       "options": {
         "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
         "textMode": "auto"
       },
-      "title": "最近 24h 告警数",
-      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.1
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [],
+          "unit": "err/s"
+        },
+        "overrides": []
+      },
       "targets": [
         {
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "expr": "sum(count_over_time({severity=~\"ERROR|CRITICAL\"} [24h]))",
-          "instant": true,
-          "legendFormat": "24h 错误总数",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(rate({job=~\"$job\", project=~\"$project\", service=~\"$service\"} [5m]))",
+          "legendFormat": "",
           "refId": "A"
         }
       ]
     },
     {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
-      "id": 101,
-      "title": "告警列表",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "grafana", "uid": "-- Grafana --" },
-      "description": "Grafana 当前活跃告警列表（需要在 Grafana Alerting 中配置告警规则）",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 6 },
       "id": 5,
-      "options": {
-        "alertInstanceLabelFilter": "",
-        "alertName": "",
-        "dashboardAlerts": false,
-        "groupBy": ["grafana_folder", "alertname"],
-        "groupMode": "default",
-        "maxItems": 20,
-        "sortOrder": 1,
-        "stateFilter": {
-          "error": true,
-          "firing": true,
-          "noData": false,
-          "normal": false,
-          "pending": true
-        },
-        "viewMode": "list"
-      },
-      "title": "当前活跃告警",
-      "type": "alertlist"
-    },
-    {
+      "type": "row",
+      "title": "错误速率趋势",
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
-      "id": 102,
-      "title": "需要关注的指标",
-      "type": "row"
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      }
     },
     {
-      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-      "description": "近 5 分钟错误日志的速率趋势",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "错误率 (logs/s)",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "line+area" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 0.5 }
-            ]
-          },
-          "unit": "ops"
-        },
-        "overrides": [
-          {
-            "matcher": { "id": "byName", "options": "ERROR+CRITICAL 错误率" },
-            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "WARNING 速率" },
-            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
-          }
-        ]
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 17 },
       "id": 6,
-      "options": {
-        "legend": { "calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "title": "5 分钟错误率",
       "type": "timeseries",
-      "targets": [
-        {
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "expr": "sum(rate({severity=~\"ERROR|CRITICAL\"} [5m]))",
-          "legendFormat": "ERROR+CRITICAL 错误率",
-          "refId": "A"
+      "title": "错误速率趋势",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
         },
-        {
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "expr": "sum(rate({severity=\"WARNING\"} [5m]))",
-          "legendFormat": "WARNING 速率",
-          "refId": "B"
+        "tooltip": {
+          "mode": "multi"
         }
-      ]
-    },
-    {
-      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-      "description": "近 5 分钟错误日志数量趋势",
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "错误数",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "line+area" }
+          "color": {
+            "mode": "thresholds"
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "orange", "value": 10 },
-              { "color": "red", "value": 50 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.1
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
             ]
           },
-          "unit": "short"
-        },
-        "overrides": [
-          {
-            "matcher": { "id": "byName", "options": "CRITICAL" },
-            "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "ERROR" },
-            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
           }
-        ]
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 17 },
-      "id": 7,
-      "options": {
-        "legend": { "calcs": ["sum", "max", "last"], "displayMode": "table", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "title": "错误数趋势",
-      "type": "timeseries",
-      "targets": [
-        {
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "expr": "sum(count_over_time({severity=\"CRITICAL\"} [5m]))",
-          "legendFormat": "CRITICAL",
-          "refId": "A"
         },
-        {
-          "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
-          "expr": "sum(count_over_time({severity=\"ERROR\"} [5m]))",
-          "legendFormat": "ERROR",
-          "refId": "B"
-        }
-      ]
-    },
-    {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
-      "id": 103,
-      "title": "告警规则建议",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "grafana", "uid": "-- Grafana --" },
-      "description": "推荐的 Grafana Alerting 告警规则配置指南",
-      "fieldConfig": {
-        "defaults": {},
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 26 },
-      "id": 8,
-      "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(rate({job=~\"$job\", project=~\"$project\", service=~\"$service\"} [5m]))",
+          "legendFormat": "总错误速率",
+          "refId": "A"
         },
-        "content": "## 📋 推荐告警规则配置\n\n在 **Grafana → Alerting → Alert rules** 中创建以下规则：\n\n---\n\n### 🔴 规则1：错误率过高 (CRITICAL)\n- **触发条件**：5 分钟内错误率超过 5%\n- **LogQL**：`sum(rate({severity=~\"ERROR|CRITICAL\"} [5m])) / sum(rate({severity=~\".+\"} [5m])) > 0.05`\n- **严重级别**：CRITICAL\n- **通知渠道**：钉钉 / 企业微信 / 邮件\n\n---\n\n### 🟠 规则2：错误数量过多 (ERROR)\n- **触发条件**：10 分钟内错误数超过 50 条\n- **LogQL**：`sum(count_over_time({severity=~\"ERROR|CRITICAL\"} [10m])) > 50`\n- **严重级别**：ERROR\n- **通知渠道**：钉钉 / 企业微信\n\n---\n\n### 🟡 规则3：警告数量过多 (WARNING)\n- **触发条件**：15 分钟内警告数超过 100 条\n- **LogQL**：`sum(count_over_time({severity=\"WARNING\"} [15m])) > 100`\n- **严重级别**：WARNING\n- **通知渠道**：邮件\n\n---\n\n### 🚨 规则4：出现 CRITICAL 日志（立即告警）\n- **触发条件**：任何 CRITICAL 级别日志出现\n- **LogQL**：`sum(count_over_time({severity=\"CRITICAL\"} [1m])) > 0`\n- **严重级别**：CRITICAL\n- **通知渠道**：钉钉 + 电话告警\n\n---\n\n> 💡 **提示**：在 Grafana Alerting 中，Loki 告警规则需要使用 **Metric 查询**（即返回数值的 LogQL），而不是日志流查询。",
-        "mode": "markdown"
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum by(project)(rate({job=~\"$job\", project=~\"$project\", service=~\"$service\"} [5m]))",
+          "legendFormat": "{{project}}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "row",
+      "title": "突增检测",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      }
+    },
+    {
+      "id": 8,
+      "type": "bargauge",
+      "title": "各项目5分钟错误数（与1小时前对比）",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
       },
-      "title": "告警规则配置指南",
-      "type": "text"
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum by(project)(count_over_time({job=~\"$job\", project=~\"$project\", service=~\"$service\"} [5m]))",
+          "legendFormat": "{{project}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "bargauge",
+      "title": "各服务器5分钟错误数",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum by(job)(count_over_time({job=~\"$job\", project=~\"$project\", service=~\"$service\"} [5m]))",
+          "legendFormat": "{{job}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "最新错误日志（快速查看）",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      }
+    },
+    {
+      "id": 11,
+      "type": "logs",
+      "title": "最新错误日志",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "options": {
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "dedupStrategy": "none"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "{job=~\"$job\", project=~\"$project\", service=~\"$service\"} | json",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "row",
+      "title": "告警规则配置建议",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      }
+    },
+    {
+      "id": 13,
+      "type": "text",
+      "title": "📋 推荐的 Grafana 告警规则",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "options": {
+        "content": "## 推荐告警规则配置\n\n以下告警规则建议在 Grafana Alerting 中手动创建：\n\n### 规则 1: 错误突增告警\n- **条件**: 5分钟内错误数 > 50\n- **LogQL**: `sum(count_over_time({env=\"pro\"} [5m])) > 50`\n- **级别**: Critical\n- **通知**: 钉钉/企业微信\n\n### 规则 2: 持续错误告警\n- **条件**: 15分钟内错误速率 > 0.5/秒\n- **LogQL**: `sum(rate({env=\"pro\"} [15m])) > 0.5`\n- **级别**: Warning\n\n### 规则 3: 单项目错误集中告警\n- **条件**: 单个 project 在 10分钟内错误数 > 30\n- **LogQL**: `sum by(project)(count_over_time({env=\"pro\"} [10m])) > 30`\n- **级别**: Warning\n\n### 规则 4: 新错误源告警\n- **条件**: 某个 caller_file 在最近 5分钟首次出现大量错误\n- **LogQL**: `sum by(caller_file)(count_over_time({env=\"pro\"} [5m])) > 10`\n- **级别**: Info\n\n### 配置步骤\n1. 进入 Grafana → Alerting → Alert rules\n2. 点击 New alert rule\n3. 选择 Loki 数据源\n4. 输入上述 LogQL 表达式\n5. 设置 Contact Point（钉钉 Webhook / 企业微信）",
+        "mode": "markdown"
+      }
     }
-  ],
-  "refresh": "10s",
-  "schemaVersion": 39,
-  "tags": ["loki", "告警"],
-  "templating": {
-    "list": []
-  },
-  "time": { "from": "now-1h", "to": "now" },
-  "timepicker": {},
-  "timezone": "browser",
-  "title": "告警总览",
-  "uid": "alerts-overview",
-  "version": 1,
-  "weekStart": ""
+  ]
 }
